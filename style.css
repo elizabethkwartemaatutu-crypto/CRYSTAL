@@ -1229,7 +1229,7 @@ main {
 	.home-page .brand-text h1,
 	.gallery-page .brand-text h1,
 	.info-page .brand-text h1 {
-		font-size: 1.06rem;
+		font-size: 1.14rem;
 		letter-spacing: 0.7px;
 		text-transform: none;
 		line-height: 1.2;
@@ -2102,17 +2102,17 @@ main {
 	.home-page .brand-text h1,
 	.gallery-page .brand-text h1,
 	.info-page .brand-text h1 {
-		font-size: 0.84rem;
+		font-size: 0.96rem;
 		line-height: 1.2;
 		letter-spacing: 0.5px;
 		text-transform: none;
-		max-width: 130px;
+		max-width: 170px;
 	}
 
 	.home-page .brand-text p,
 	.gallery-page .brand-text p,
 	.info-page .brand-text p {
-		font-size: 0.56rem;
+		font-size: 0.6rem;
 		line-height: 1.2;
 		letter-spacing: 0.35px;
 		text-transform: none;
