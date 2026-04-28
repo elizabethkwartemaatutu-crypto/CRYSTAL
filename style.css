@@ -1204,26 +1204,44 @@ main {
 		padding-right: 0.9rem;
 	}
 
+	.home-page .brand,
+	.gallery-page .brand,
+	.info-page .brand {
+		width: calc(100% - 56px);
+		min-width: 0;
+		gap: 0.55rem;
+	}
+
 	.home-page .brand-text,
 	.gallery-page .brand-text,
 	.info-page .brand-text {
-		left: 50%;
-		width: min(68vw, 300px);
+		position: static;
+		left: auto;
+		transform: none;
+		flex: 1 1 auto;
+		width: auto;
+		max-width: 100%;
+		text-align: center;
 		white-space: normal;
+		padding-right: 0;
 	}
 
 	.home-page .brand-text h1,
 	.gallery-page .brand-text h1,
 	.info-page .brand-text h1 {
-		font-size: 1.15rem;
-		letter-spacing: 1.2px;
+		font-size: 0.98rem;
+		letter-spacing: 0.7px;
+		text-transform: none;
+		line-height: 1.2;
 	}
 
 	.home-page .brand-text p,
 	.gallery-page .brand-text p,
 	.info-page .brand-text p {
-		font-size: 0.66rem;
-		letter-spacing: 1.6px;
+		font-size: 0.63rem;
+		letter-spacing: 0.55px;
+		text-transform: none;
+		line-height: 1.2;
 	}
 
 	.home-page .nav-links {
