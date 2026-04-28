@@ -2144,7 +2144,7 @@
             <section class="page" id="reports">
                 <div class="panel reveal">
                     <h2>Reports</h2>
-                    <p class="helper-text">Teachers can enter score components and publish assignments by class. Administrators can search students, view all teacher marks, and print A4 report cards.</p>
+                    <p class="helper-text">Teachers can enter score components and publish assignments by class. Administrators can search students and print A4 report cards.</p>
                     <button type="button" class="btn btn-secondary" id="openTeacherPortalBtn">Open Teacher Portal</button>
                 </div>
 
@@ -2713,11 +2713,11 @@
         }
 
         function canPublishAssignments() {
-            return isTeacherOrAdmin();
+            return activeSession.role === 'Teacher';
         }
 
         function canSubmitAssignments() {
-            return activeSession.role === 'Student' || activeSession.role === 'Teacher' || activeSession.role === 'Administrator';
+            return activeSession.role === 'Student' || activeSession.role === 'Teacher';
         }
 
         function showTeacherDashboardSection(sectionName) {
@@ -2757,12 +2757,8 @@
                 studentUploadPanel.classList.toggle('role-visibility-hidden', !canSubmitAssignments());
             }
 
-            if (activeSession.role === 'Teacher') {
+            if (activeSession.role === 'Teacher' || activeSession.role === 'Administrator') {
                 showTeacherDashboardSection('resultsEntry');
-            } else {
-                document.querySelectorAll('.teacher-dashboard-section').forEach((section) => {
-                    section.classList.remove('hidden');
-                });
             }
         }
 
@@ -4692,7 +4688,7 @@
         document.getElementById('assignmentForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             if (!canPublishAssignments()) {
-                alert('Only teachers and administrators can publish assignments.');
+                alert('Only teachers can publish assignments.');
                 return;
             }
 
@@ -4724,7 +4720,7 @@
             teacherNoteForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (!canPublishAssignments()) {
-                    alert('Only teachers and administrators can send notes.');
+                    alert('Only teachers can send notes.');
                     return;
                 }
 
