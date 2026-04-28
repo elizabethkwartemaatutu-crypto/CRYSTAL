@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Crystal Montessori School | Contact Us</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body class="info-page">
+	<header class="site-header">
+		<nav class="nav-wrap" aria-label="Main Navigation">
+			<div class="brand">
+				<img src="images/logo2.png" alt="Crystal Montessori School logo" />
+				<div class="brand-text">
+					<h1>Crystal Montessori School</h1>
+					<p>Our God Our Help</p>
+				</div>
+			</div>
+			<button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+				<span class="nav-toggle-bar"></span>
+			</button>
+			<ul class="nav-links" id="primary-navigation">
+				<li><a href="Index.html">Home</a></li>
+				<li><a href="Gallery.html">Gallery</a></li>
+				<li><a href="Management.html">Management</a></li>
+				<li><a href="About Us.html">About Us</a></li>
+				<li><a class="active" href="Contact Us.html">Contact Us</a></li>
+			</ul>
+		</nav>
+	</header>
+
+	<main class="info-main">
+
+		<section class="info-hero">
+			<div class="info-hero-icon" aria-hidden="true">📞</div>
+			<div class="info-hero-copy">
+				<p class="info-kicker">Contact Us</p>
+				<h2>Simple, Fast, and Friendly Support</h2>
+				<p>At Crystal Montessori School, we make it simple and easy for parents and guardians to reach us. Our goal is to provide quick responses and clear support for all enquiries.</p>
+			</div>
+		</section>
+
+		<section>
+			<div class="contact-info-grid">
+				<div class="contact-info-card">
+					<span class="contact-info-icon">📞</span>
+					<span class="contact-info-label">Call &amp; WhatsApp Support</span>
+					<span class="contact-info-value">Phone/WhatsApp: 0248 333 156<br />Reach out to us for admissions, enquiries, or support, and our team will respond promptly.</span>
+				</div>
+
+				<div class="contact-info-card">
+					<span class="contact-info-icon">📍</span>
+					<span class="contact-info-label">Visit Our School</span>
+					<span class="contact-info-value">We welcome parents and visitors to come and experience our learning environment.<br />Our school provides a safe, friendly, and child-centred atmosphere for every learner.</span>
+				</div>
+
+				<div class="contact-info-card">
+					<span class="contact-info-icon">⏰</span>
+					<span class="contact-info-label">Working Hours</span>
+					<span class="contact-info-value">Monday - Friday: 6:00 AM - 4:00 PM<br />Saturday: By appointment<br />Sunday: Closed</span>
+				</div>
+			</div>
+		</section>
+
+		<div class="info-two-col">
+			<div class="info-card">
+				<span class="info-card-title">Email Enquiry Form</span>
+				<p>Fill in the form below to send us a message. We will get back to you as soon as possible.</p>
+				<form class="contact-form" onsubmit="handleFormSubmit(event)">
+					<div class="contact-form-row">
+						<div class="form-group">
+							<label for="contact-name">Full Name</label>
+							<input type="text" id="contact-name" name="name" placeholder="Full Name" required />
+						</div>
+						<div class="form-group">
+							<label for="contact-phone">Phone Number</label>
+							<input type="tel" id="contact-phone" name="phone" placeholder="Phone Number" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="contact-email">Email Address</label>
+						<input type="email" id="contact-email" name="email" placeholder="Email Address" required />
+					</div>
+					<div class="form-group">
+						<label for="contact-subject">Subject</label>
+						<input type="text" id="contact-subject" name="subject" placeholder="Subject" required />
+					</div>
+					<div class="form-group">
+						<label for="contact-message">Message</label>
+						<textarea id="contact-message" name="message" placeholder="Write your message" required></textarea>
+					</div>
+					<button type="submit" class="btn-submit">Submit</button>
+				</form>
+				<p id="form-success" class="form-success-msg">Thank you. Your message has been submitted successfully.</p>
+			</div>
+
+			<div class="contact-sidebar">
+				<div class="info-card">
+					<span class="info-card-title">Our MVP Promise</span>
+					<p>We focus on speed, clarity, and accessibility:</p>
+					<ul>
+						<li>Quick response to calls and messages</li>
+						<li>Clear guidance on admissions and school services</li>
+						<li>Friendly and professional communication</li>
+					</ul>
+				</div>
+
+				<div class="info-card">
+					<span class="info-card-title">Let's Connect</span>
+					<p>Whether you are a parent, guardian, or partner, we are always ready to hear from you. Contact us today and become part of the Crystal Montessori School community.</p>
+					<p><strong>Direct line:</strong> 0248 333 156</p>
+				</div>
+			</div>
+		</div>
+
+	</main>
+
+<footer class="site-footer">
+<div class="footer-social-links" aria-label="Social and contact links">
+<a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+<img src="images/facebook-icon.svg" alt="Facebook" />
+</a>
+<a href="https://wa.me/233248333156" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+<img src="images/whatsapp-icon.svg" alt="WhatsApp" />
+</a>
+<a href="mailto:info@crystalmontessori.edu.gh" aria-label="Email">
+<img src="images/email-icon.svg" alt="Email" />
+</a>
+</div>
+<p>&copy; 2026 Crystal Montessori School | Our God Our Help</p>
+</footer>
+
+	<script>
+		const navToggle = document.querySelector(".nav-toggle");
+		const navLinks = document.getElementById("primary-navigation");
+
+		function closeMobileMenu() {
+			if (!navToggle || !navLinks) return;
+			navToggle.setAttribute("aria-expanded", "false");
+			navLinks.classList.remove("is-open");
+		}
+
+		if (navToggle && navLinks) {
+			navToggle.addEventListener("click", () => {
+				const isOpen = navToggle.getAttribute("aria-expanded") === "true";
+				navToggle.setAttribute("aria-expanded", String(!isOpen));
+				navLinks.classList.toggle("is-open", !isOpen);
+			});
+
+			navLinks.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMobileMenu));
+
+			document.addEventListener("click", event => {
+				if (!navLinks.classList.contains("is-open")) return;
+				if (!event.target.closest(".nav-wrap")) closeMobileMenu();
+			});
+
+			window.addEventListener("resize", () => {
+				if (window.innerWidth > 760) closeMobileMenu();
+			});
+		}
+
+		function handleFormSubmit(event) {
+			event.preventDefault();
+			const form = event.target;
+			const successMsg = document.getElementById("form-success");
+			form.style.display = "none";
+			successMsg.style.display = "block";
+		}
+	</script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Facebook cover image">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a4ea7"/>
+      <stop offset="100%" stop-color="#4267B2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <circle cx="600" cy="330" r="180" fill="none" stroke="#ffffff" stroke-width="26"/>
+  <path d="M630 495V350h55l8-66h-63v-42c0-19 5-32 33-32h35v-59c-17-2-34-3-51-3-50 0-85 31-85 88v48h-57v66h57v145z" fill="#ffffff"/>
+  <text x="64" y="615" fill="#ffffff" font-size="92" font-family="Segoe UI, Arial, sans-serif" font-weight="700" letter-spacing="2">FACEBOOK</text>
+</svg>
