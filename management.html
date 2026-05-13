@@ -922,6 +922,33 @@
             gap: 0.65rem;
         }
 
+        .report-school-header {
+            text-align: center;
+            display: grid;
+            gap: 0.15rem;
+        }
+
+        .report-school-header .school-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--ink);
+            letter-spacing: 0.3px;
+        }
+
+        .report-school-header .report-title {
+            font-size: 0.88rem;
+            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: 0.18px;
+            text-transform: uppercase;
+        }
+
+        .report-card-print-container {
+            display: grid;
+            gap: 0.9rem;
+        }
+
         .report-sheet h4 {
             font-family: 'Outfit', sans-serif;
             color: var(--brand-deep);
@@ -1356,11 +1383,26 @@
             }
 
             body[data-print-target="report"] #reportSheet {
-                position: fixed;
-                left: 0;
-                top: 0;
+                position: static;
+                left: auto;
+                top: auto;
                 width: 210mm;
-                height: 297mm;
+                height: auto;
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+                margin: 0 auto;
+                background: #fff;
+                box-sizing: border-box;
+                overflow: visible;
+                gap: 0;
+                display: block;
+            }
+
+            body[data-print-target="report"] #reportSheet .report-term-sheet {
+                width: 210mm;
+                min-height: 297mm;
                 border: none;
                 box-shadow: none;
                 border-radius: 0;
@@ -1368,10 +1410,13 @@
                 margin: 0;
                 background: #fff;
                 box-sizing: border-box;
-                overflow: hidden;
-                gap: 3.4mm;
-                display: grid;
-                grid-template-rows: auto auto auto 1fr auto;
+                break-after: page;
+                page-break-after: always;
+            }
+
+            body[data-print-target="report"] #reportSheet .report-term-sheet:last-child {
+                break-after: auto;
+                page-break-after: auto;
             }
 
             #printReceipt h3 {
@@ -2180,6 +2225,14 @@
                             <select id="reportClassSelect"></select>
                         </label>
                         <label>
+                            <span>Term</span>
+                            <select id="reportTermSelect">
+                                <option value="Term 1">Term 1</option>
+                                <option value="Term 2">Term 2</option>
+                                <option value="Term 3">Term 3</option>
+                            </select>
+                        </label>
+                        <label>
                             <span>Search Student Name</span>
                             <input id="reportStudentSearch" type="search" placeholder="Type student name">
                         </label>
@@ -2440,6 +2493,7 @@
         const smsClassSelect = document.getElementById('smsClass');
         const feedingClassSelect = document.getElementById('feedingClass');
         const reportClassSelect = document.getElementById('reportClassSelect');
+        const reportTermSelect = document.getElementById('reportTermSelect');
         const resultClassSelect = document.getElementById('resultClass');
         const feedingFilterClassSelect = document.getElementById('feedingFilterClass');
         const assignmentClassSelect = document.getElementById('assignmentClass');
@@ -2504,6 +2558,7 @@
         let applySavedSpecialFeesNextTerm = false;
         let currentFeedingFeePerDay = INITIAL_FEEDING_FEE_PER_DAY;
         let activeSession = { userId: '', role: '' };
+        let selectedReportStudentId = '';
 
             let inactivityTimeout = null;
             const INACTIVITY_TIMEOUT_MS = 60 * 1000;
@@ -3291,6 +3346,75 @@
             return 'F';
         }
 
+        function normalizeSubjectName(subject) {
+            return String(subject || '').trim().toLowerCase();
+        }
+
+        function getTemplateSubjectsByClass(klass) {
+            const className = String(klass || '').toLowerCase();
+            if (className.includes('creche')) {
+                return ['Language Skills', 'Number Work', 'Creative Activities', 'Environmental Studies', 'Rhymes'];
+            }
+
+            if (className.includes('nursery') || className.includes('kg')) {
+                return ['English Language', 'Mathematics', 'Science', 'Phonics', 'Creative Arts', 'Handwriting'];
+            }
+
+            return [
+                'English Language',
+                'Mathematics',
+                'Science',
+                'Computing',
+                'Social Studies',
+                'R.M.E',
+                'Creative Arts',
+                'French',
+                'Ghanaian Language'
+            ];
+        }
+
+        function getStudentFeeSummary(student) {
+            const balanceKey = getStudentBalanceKey(student.name);
+            const outstandingFees = Number(studentBalances[balanceKey] || 0);
+            const nextTermFees = Number(getAssignedTermFee(student) || 0);
+            return {
+                outstandingFees,
+                nextTermFees,
+                totalFees: outstandingFees + nextTermFees
+            };
+        }
+
+        function getTermTemplateRows(templateSubjects, termResults) {
+            const bySubject = {};
+            termResults.forEach((entry) => {
+                bySubject[normalizeSubjectName(entry.subject)] = entry;
+            });
+
+            return templateSubjects.map((subject) => {
+                const entry = bySubject[normalizeSubjectName(subject)] || null;
+                const classScore = entry ? Number(entry.classScore || 0).toFixed(1) : '';
+                const assignmentScore = entry ? Number(entry.assignmentScore || 0).toFixed(1) : '';
+                const projectScore = entry ? Number(entry.projectScore || 0).toFixed(1) : '';
+                const examRawScore = entry ? Number(entry.examRawScore || 0).toFixed(1) : '';
+                const examScaled = entry ? Number(entry.examScaled || 0).toFixed(1) : '';
+                const total = entry ? Number(entry.total || 0).toFixed(1) : '';
+                const grade = entry ? (entry.grade || getGrade(Number(entry.total || 0))) : '';
+
+                return `
+                    <tr>
+                        <td>${subject}</td>
+                        <td>${classScore}</td>
+                        <td>${assignmentScore}</td>
+                        <td>${projectScore}</td>
+                        <td>${examRawScore}</td>
+                        <td>${examScaled}</td>
+                        <td>${total}</td>
+                        <td>${grade}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         function updateReportStudentButtons() {
             const wrap = document.getElementById('reportStudentList');
             wrap.innerHTML = '';
@@ -3316,22 +3440,15 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.textContent = student.name;
-                btn.addEventListener('click', () => renderStudentReportCard(student));
+                btn.addEventListener('click', () => renderStudentReportCard(student, reportTermSelect ? reportTermSelect.value : 'Term 1'));
                 wrap.appendChild(btn);
             });
         }
 
-        function renderStudentReportCard(student) {
+        function renderStudentReportCard(student, termFilter = 'Term 1') {
             const reportCard = document.getElementById('reportCardView');
             const studentResults = results.filter((entry) => entry.studentId === student.id);
-
-            if (!studentResults.length) {
-                reportCard.innerHTML = `
-                    <h4>${student.name}</h4>
-                    <p>No term results found for this student.</p>
-                `;
-                return;
-            }
+            selectedReportStudentId = student.id;
 
             const normalizedResults = studentResults.map((entry) => {
                 const legacyClass = Number(entry.classwork || 0);
@@ -3355,96 +3472,78 @@
                 };
             });
 
-            const totalScore = normalizedResults.reduce((sum, entry) => sum + Number(entry.total || 0), 0);
-            const averageScore = totalScore / studentResults.length;
-            const failingCount = normalizedResults.filter((entry) => Number(entry.total || 0) < 50).length;
-            const excellentCount = normalizedResults.filter((entry) => Number(entry.total || 0) >= 80).length;
-            const balanceKey = getStudentBalanceKey(student.name);
-            const outstandingFees = Number(studentBalances[balanceKey] || 0);
-            const nextTermFees = getAssignedTermFee(student);
-            const totalFees = outstandingFees + nextTermFees;
+            const className = getCurrentClass(student.startClass, student.admissionYear);
+            const templateSubjects = getTemplateSubjectsByClass(className);
+            const termOrder = ['Term 1', 'Term 2', 'Term 3'];
+            const availableTerms = Array.from(new Set(normalizedResults.map((entry) => entry.term).filter(Boolean)));
+            const normalizedTermFilter = String(termFilter || 'Term 1');
+            const termsFromResults = termOrder.filter((term) => availableTerms.includes(term));
+            const termsToRender = termsFromResults.filter((term) => term === normalizedTermFilter);
 
-            const teacherRemarks = Array.from(new Set(
-                normalizedResults
-                    .map((entry) => (entry.teacherRemark || '').trim())
-                    .filter(Boolean)
-            ));
+            if (!termsToRender.length) {
+                reportCard.innerHTML = `<p>No results found for ${student.name} in ${normalizedTermFilter}.</p>`;
+                return;
+            }
 
-            const adminRemarks = Array.from(new Set(
-                normalizedResults
-                    .map((entry) => (entry.adminRemark || '').trim())
-                    .filter(Boolean)
-            ));
+            const { outstandingFees, nextTermFees, totalFees } = getStudentFeeSummary(student);
 
-            const teacherRemarkText = teacherRemarks.length
-                ? teacherRemarks.join(' | ')
-                : 'No teacher remark added yet.';
+            const termSheetsHtml = termsToRender.map((term) => {
+                const termResults = normalizedResults.filter((entry) => entry.term === term);
+                const rows = getTermTemplateRows(templateSubjects, termResults);
+                const termTeacherRemarks = Array.from(new Set(termResults.map((entry) => (entry.teacherRemark || '').trim()).filter(Boolean)));
+                const termAdminRemarks = Array.from(new Set(termResults.map((entry) => (entry.adminRemark || '').trim()).filter(Boolean)));
+                const totalScores = termResults.map((entry) => Number(entry.total || 0));
+                const averageScore = totalScores.length ? totalScores.reduce((sum, score) => sum + score, 0) / totalScores.length : 0;
+                const failingCount = totalScores.filter((score) => score < 50).length;
+                const excellentCount = totalScores.filter((score) => score >= 80).length;
+                const headTeacherRemark = generateHeadTeacherRemark(averageScore, failingCount, excellentCount);
 
-            const adminRemarkText = adminRemarks.length
-                ? adminRemarks.join(' | ')
-                : 'No admin remark added yet.';
-
-            const headTeacherRemark = generateHeadTeacherRemark(averageScore, failingCount, excellentCount);
-
-            const rows = normalizedResults.map((entry) => `
-                <tr>
-                    <td>${entry.term}</td>
-                    <td>${entry.subject}</td>
-                    <td>${entry.teacherName}</td>
-                    <td>${entry.classScore.toFixed(1)}</td>
-                    <td>${entry.assignmentScore.toFixed(1)}</td>
-                    <td>${entry.projectScore.toFixed(1)}</td>
-                    <td>${entry.examRawScore.toFixed(1)}</td>
-                    <td>${entry.examScaled.toFixed(1)}</td>
-                    <td>${entry.total.toFixed(1)}</td>
-                    <td>${entry.grade}</td>
-                </tr>
-            `).join('');
-
-            const teacherCount = new Set(normalizedResults.map((entry) => entry.teacherId)).size;
+                return `
+                    <article class="report-sheet report-term-sheet">
+                        <header class="report-school-header">
+                            <div class="school-name">Crystal Montessori School</div>
+                            <div class="report-title">${term} Terminal Report Card</div>
+                        </header>
+                        <div class="report-meta">
+                            <p><strong>Student:</strong> ${student.name}</p>
+                            <p><strong>Student ID:</strong> ${student.id}</p>
+                            <p><strong>Class:</strong> ${className}</p>
+                            <p><strong>Academic Year:</strong> ${new Date().getFullYear()}</p>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Class (20)</th>
+                                        <th>Assign (20)</th>
+                                        <th>Project (10)</th>
+                                        <th>Exam (100)</th>
+                                        <th>Exam (50)</th>
+                                        <th>Total (100)</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                        <div class="report-summary-grid">
+                            <article class="report-summary-card"><h5>Outstanding Fees</h5><p>GHS ${outstandingFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Next Term Fees</h5><p>GHS ${nextTermFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Total Fees</h5><p>GHS ${totalFees.toLocaleString()}</p></article>
+                        </div>
+                        <div class="remarks-grid">
+                            <p><strong>Teacher's Remark:</strong> ${termTeacherRemarks.length ? termTeacherRemarks.join(' | ') : '________________________________________'}</p>
+                            <p><strong>Admin Remark:</strong> ${termAdminRemarks.length ? termAdminRemarks.join(' | ') : '________________________________________'}</p>
+                            <p><strong>Head Teacher's Remark:</strong> ${headTeacherRemark}</p>
+                        </div>
+                    </article>
+                `;
+            }).join('');
 
             reportCard.innerHTML = `
-                <div id="reportSheet" class="report-sheet">
-                    <h4>Crystal Montessori School Report Card</h4>
-                    <div class="report-meta">
-                        <p><strong>Student:</strong> ${student.name}</p>
-                        <p><strong>Student ID:</strong> ${student.id}</p>
-                        <p><strong>Class:</strong> ${getCurrentClass(student.startClass, student.admissionYear)}</p>
-                    </div>
-
-                    <div class="report-summary-grid">
-                        <article class="report-summary-card"><h5>Average Score</h5><p>${averageScore.toFixed(1)}%</p></article>
-                        <article class="report-summary-card"><h5>Teachers Entered</h5><p>${teacherCount}</p></article>
-                        <article class="report-summary-card"><h5>Outstanding Fees</h5><p>GHS ${outstandingFees.toLocaleString()}</p></article>
-                        <article class="report-summary-card"><h5>Next Term Fees</h5><p>GHS ${nextTermFees.toLocaleString()}</p></article>
-                        <article class="report-summary-card"><h5>Total Fees</h5><p>GHS ${totalFees.toLocaleString()}</p></article>
-                    </div>
-
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Term</th>
-                                    <th>Subject</th>
-                                    <th>Teacher</th>
-                                    <th>Class (20)</th>
-                                    <th>Assign (20)</th>
-                                    <th>Project (10)</th>
-                                    <th>Exam (100)</th>
-                                    <th>Exam (50)</th>
-                                    <th>Total (100)</th>
-                                    <th>Grade</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-
-                    <div class="remarks-grid">
-                        <p><strong>Teacher's Remark:</strong> ${teacherRemarkText}</p>
-                        <p><strong>Admin Remark:</strong> ${adminRemarkText}</p>
-                        <p><strong>Head Teacher's Remark (Auto):</strong> ${headTeacherRemark}</p>
-                    </div>
+                <div id="reportSheet" class="report-card-print-container">
+                    ${termSheetsHtml}
                 </div>
             `;
         }
@@ -3509,10 +3608,10 @@
             }
 
             const studentResults = results.filter((entry) => normalizeStudentId(entry.studentId) === normalizeStudentId(student.id));
-            if (!studentResults.length) {
-                studentPortalYearlyResults.innerHTML = '<p>No yearly result records available yet.</p>';
-                return;
-            }
+            const className = getCurrentClass(student.startClass, student.admissionYear);
+            const templateSubjects = getTemplateSubjectsByClass(className);
+            const termOrder = ['Term 1', 'Term 2', 'Term 3'];
+            const { outstandingFees, nextTermFees, totalFees } = getStudentFeeSummary(student);
 
             const grouped = {};
             studentResults.forEach((entry) => {
@@ -3521,41 +3620,76 @@
                 grouped[yearKey].push(entry);
             });
 
-            const yearsHtml = Object.keys(grouped).sort().map((yearKey) => {
-                const rows = grouped[yearKey].map((entry) => {
-                    const assignmentScore = Number(entry.assignmentScore != null ? entry.assignmentScore : 0);
-                    const projectScore = Number(entry.projectScore != null ? entry.projectScore : 0);
-                    const totalScore = Number(entry.total != null ? entry.total : 0);
-                    return `
-                        <tr>
-                            <td>${entry.term || '-'}</td>
-                            <td>${entry.subject || '-'}</td>
-                            <td>${assignmentScore.toFixed(1)}</td>
-                            <td>${projectScore.toFixed(1)}</td>
-                            <td>${totalScore.toFixed(1)}</td>
-                            <td>${entry.grade || getGrade(totalScore)}</td>
-                        </tr>
-                    `;
-                }).join('');
+            if (!Object.keys(grouped).length) {
+                grouped[String(new Date().getFullYear())] = [];
+            }
 
-                return `
-                    <article class="report-sheet">
-                        <h4>Academic Year: ${yearKey}</h4>
+            const yearsHtml = Object.keys(grouped).sort().map((yearKey) => {
+                const yearResults = grouped[yearKey].map((entry) => {
+                    const legacyClass = Number(entry.classwork || 0);
+                    const classScore = entry.classScore != null ? Number(entry.classScore) : Math.min(20, (legacyClass / 50) * 20);
+                    const assignmentScore = entry.assignmentScore != null ? Number(entry.assignmentScore) : 0;
+                    const projectScore = entry.projectScore != null ? Number(entry.projectScore) : 0;
+                    const legacyExam = Number(entry.exam || 0);
+                    const examRawScore = entry.examRawScore != null ? Number(entry.examRawScore) : Math.min(100, legacyExam * 2);
+                    const examScaled = entry.examScaled != null ? Number(entry.examScaled) : Math.min(50, legacyExam);
+                    const total = entry.total != null ? Number(entry.total) : classScore + assignmentScore + projectScore + examScaled;
+                    return `
+                        ${JSON.stringify({
+                            term: entry.term || '',
+                            subject: entry.subject || '',
+                            classScore,
+                            assignmentScore,
+                            projectScore,
+                            examRawScore,
+                            examScaled,
+                            total,
+                            grade: entry.grade || getGrade(total)
+                        })}
+                    `;
+                }).map((text) => JSON.parse(text));
+
+                const yearTermSet = new Set(yearResults.map((entry) => entry.term).filter(Boolean));
+                const termsToRender = yearTermSet.size ? termOrder.filter((term) => yearTermSet.has(term)) : termOrder;
+                const termBlocks = termsToRender.map((term) => {
+                    const termResults = yearResults.filter((entry) => entry.term === term);
+                    const rows = getTermTemplateRows(templateSubjects, termResults);
+                    return `
+                        <h5 style="margin:0;color:var(--muted);">${term}</h5>
                         <div class="table-wrap">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Term</th>
                                         <th>Subject</th>
-                                        <th>Assignment</th>
-                                        <th>Project</th>
-                                        <th>Total</th>
+                                        <th>Class (20)</th>
+                                        <th>Assign (20)</th>
+                                        <th>Project (10)</th>
+                                        <th>Exam (100)</th>
+                                        <th>Exam (50)</th>
+                                        <th>Total (100)</th>
                                         <th>Grade</th>
                                     </tr>
                                 </thead>
                                 <tbody>${rows}</tbody>
                             </table>
                         </div>
+                    `;
+                }).join('');
+
+                return `
+                    <article class="report-sheet">
+                        <h4>Academic Year: ${yearKey}</h4>
+                        <div class="report-meta">
+                            <p><strong>Student:</strong> ${student.name}</p>
+                            <p><strong>Student ID:</strong> ${student.id}</p>
+                            <p><strong>Class:</strong> ${className}</p>
+                        </div>
+                        <div class="report-summary-grid">
+                            <article class="report-summary-card"><h5>Outstanding Fees</h5><p>GHS ${outstandingFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Next Term Fees</h5><p>GHS ${nextTermFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Total Fees</h5><p>GHS ${totalFees.toLocaleString()}</p></article>
+                        </div>
+                        ${termBlocks}
                     </article>
                 `;
             }).join('');
@@ -3608,10 +3742,10 @@
             }
 
             const studentResults = results.filter((entry) => normalizeStudentId(entry.studentId) === normalizeStudentId(student.id));
-            if (!studentResults.length) {
-                parentPortalYearlyResults.innerHTML = '<p>No yearly result records available yet.</p>';
-                return;
-            }
+            const className = getCurrentClass(student.startClass, student.admissionYear);
+            const templateSubjects = getTemplateSubjectsByClass(className);
+            const termOrder = ['Term 1', 'Term 2', 'Term 3'];
+            const { outstandingFees, nextTermFees, totalFees } = getStudentFeeSummary(student);
 
             const grouped = {};
             studentResults.forEach((entry) => {
@@ -3620,41 +3754,76 @@
                 grouped[yearKey].push(entry);
             });
 
-            parentPortalYearlyResults.innerHTML = Object.keys(grouped).sort().map((yearKey) => {
-                const rows = grouped[yearKey].map((entry) => {
-                    const assignmentScore = Number(entry.assignmentScore != null ? entry.assignmentScore : 0);
-                    const projectScore = Number(entry.projectScore != null ? entry.projectScore : 0);
-                    const totalScore = Number(entry.total != null ? entry.total : 0);
-                    return `
-                        <tr>
-                            <td>${entry.term || '-'}</td>
-                            <td>${entry.subject || '-'}</td>
-                            <td>${assignmentScore.toFixed(1)}</td>
-                            <td>${projectScore.toFixed(1)}</td>
-                            <td>${totalScore.toFixed(1)}</td>
-                            <td>${entry.grade || getGrade(totalScore)}</td>
-                        </tr>
-                    `;
-                }).join('');
+            if (!Object.keys(grouped).length) {
+                grouped[String(new Date().getFullYear())] = [];
+            }
 
-                return `
-                    <article class="report-sheet">
-                        <h4>Academic Year: ${yearKey}</h4>
+            parentPortalYearlyResults.innerHTML = Object.keys(grouped).sort().map((yearKey) => {
+                const yearResults = grouped[yearKey].map((entry) => {
+                    const legacyClass = Number(entry.classwork || 0);
+                    const classScore = entry.classScore != null ? Number(entry.classScore) : Math.min(20, (legacyClass / 50) * 20);
+                    const assignmentScore = entry.assignmentScore != null ? Number(entry.assignmentScore) : 0;
+                    const projectScore = entry.projectScore != null ? Number(entry.projectScore) : 0;
+                    const legacyExam = Number(entry.exam || 0);
+                    const examRawScore = entry.examRawScore != null ? Number(entry.examRawScore) : Math.min(100, legacyExam * 2);
+                    const examScaled = entry.examScaled != null ? Number(entry.examScaled) : Math.min(50, legacyExam);
+                    const total = entry.total != null ? Number(entry.total) : classScore + assignmentScore + projectScore + examScaled;
+                    return `
+                        ${JSON.stringify({
+                            term: entry.term || '',
+                            subject: entry.subject || '',
+                            classScore,
+                            assignmentScore,
+                            projectScore,
+                            examRawScore,
+                            examScaled,
+                            total,
+                            grade: entry.grade || getGrade(total)
+                        })}
+                    `;
+                }).map((text) => JSON.parse(text));
+
+                const yearTermSet = new Set(yearResults.map((entry) => entry.term).filter(Boolean));
+                const termsToRender = yearTermSet.size ? termOrder.filter((term) => yearTermSet.has(term)) : termOrder;
+                const termBlocks = termsToRender.map((term) => {
+                    const termResults = yearResults.filter((entry) => entry.term === term);
+                    const rows = getTermTemplateRows(templateSubjects, termResults);
+                    return `
+                        <h5 style="margin:0;color:var(--muted);">${term}</h5>
                         <div class="table-wrap">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Term</th>
                                         <th>Subject</th>
-                                        <th>Assignment</th>
-                                        <th>Project</th>
-                                        <th>Total</th>
+                                        <th>Class (20)</th>
+                                        <th>Assign (20)</th>
+                                        <th>Project (10)</th>
+                                        <th>Exam (100)</th>
+                                        <th>Exam (50)</th>
+                                        <th>Total (100)</th>
                                         <th>Grade</th>
                                     </tr>
                                 </thead>
                                 <tbody>${rows}</tbody>
                             </table>
                         </div>
+                    `;
+                }).join('');
+
+                return `
+                    <article class="report-sheet">
+                        <h4>Academic Year: ${yearKey}</h4>
+                        <div class="report-meta">
+                            <p><strong>Ward:</strong> ${student.name}</p>
+                            <p><strong>Student ID:</strong> ${student.id}</p>
+                            <p><strong>Class:</strong> ${className}</p>
+                        </div>
+                        <div class="report-summary-grid">
+                            <article class="report-summary-card"><h5>Outstanding Fees</h5><p>GHS ${outstandingFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Next Term Fees</h5><p>GHS ${nextTermFees.toLocaleString()}</p></article>
+                            <article class="report-summary-card"><h5>Total Fees</h5><p>GHS ${totalFees.toLocaleString()}</p></article>
+                        </div>
+                        ${termBlocks}
                     </article>
                 `;
             }).join('');
@@ -4627,6 +4796,14 @@
         });
 
         reportClassSelect.addEventListener('change', updateReportStudentButtons);
+        if (reportTermSelect) {
+            reportTermSelect.addEventListener('change', () => {
+                if (!selectedReportStudentId) return;
+                const student = students.find((entry) => entry.id === selectedReportStudentId);
+                if (!student) return;
+                renderStudentReportCard(student, reportTermSelect.value);
+            });
+        }
         reportStudentSearchInput.addEventListener('input', updateReportStudentButtons);
 
         assignmentFilterClassSelect.addEventListener('change', renderAssignmentBoard);
